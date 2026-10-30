@@ -1,57 +1,57 @@
-<!<!DOCTYPE html>
-<超文本标记语言 语言="zh-CN">
-<头>
-<元数据 字符集="UTF-8">
-<元数据 名字="viewport" 内容="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<标题>容县实验高中 · 校园墙</标题>
-<剧本 源="https://cdn.tailwindcss.com"></剧本>
-<剧本 源="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></剧本>
-</头>
-<身体 班级=“bg-gray-50 min-h-屏幕文本-gray-800”>
-<导航 班级=“粘顶-0 z-10 bg-白色边框-b边框-灰色-200”>
-  <级 班级=“max-w-[640px]mx-auto px-4 py-3弹性项目-中心对齐-之间”>
-    <h1 班级=“文本-sm字体-粗体文本-靛蓝-600”>容县实验高中 · 校园墙</h1>
-    <级 身份证="nav-actions" 班级=“弹性项目-中心间隙-3文本-sm”></级>
-  </级>
-</导航>
-<主要的 身份证="main" 班级="max-w-[640px] mx-auto px-4 py-4"></主要的>
+<!<!<!DOCTYPE html>
+<} 否则 { nav.innerHTML = '="zh-CN">
+<标题>
+<级= '> 班级="UTF-8">
+<剧本
+<剧本{源剧本班级>源</'+P="https：//cdn. jsdelivr. net/npm/@supabase/supabase-js@2">
+<</>[文本-sm**-500]>这是容县实验高中的校园墙</🌱
+<有话好好说，别发真人照片和真名
+<P]'+按钮>=youmovie-z-10[mt-3 w-w-glomas-lg bg-magomovie-600-youmovie-2-sm]>
+<<+导航级 班级=“max-w-[640px]mx-auto +=py-3弹性项目-you>H
+1班级<
+' 级 '
+    <[文本-Mao Mao-you-600]Mao Mao-you-600][Mao Mao-actions]=[Mao Mao-actions]=></[/]
+    班级身份证=
+加载中
+/h1>身份证=[main]mayoto="max-w-[640px]mx-auto px-4 py-4">
+主要的<文本-you>
 <剧本>
 // ========== 改这三行！！！ ==========
-常量 SUPABASE_URL = 'https://eqhbntvaofjtbiqbvfat.supabase.co/rest/v1/'
+常量 SUPABASE_URL='https://eqhbntvaofjtbiqbvfat.SUPABASE.co'
 常量 SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaGJudHZhb2ZqdGJpcWJ2ZmF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNzYwNzksImV4cCI6MjEwODk1MjA3OX0.K1QMYYmXv95wi2S7Si9qhwQTEfS89mExVUqwLAN286U'
-常量 INVITE_CODE  = 'nlnb2026'
+常量 INVITE_CODE='nlnb2026'
 // ====================================
 
-常量 锑 = 窗.supabase.活性(SUPABASE_URL, SUPABASE_KEY)
-常量 BAD_WORDS = ['代写','刷单','博彩','加微信','贷款','约炮','开房']
+常量=. You SUPABASE. You（SUPABASE_URL，SUPABASE_KEY）
+常量 BAD_WORDS=['mayoto you'，'mayoto you'，'mayoto'，'mayoto'，'mayoto'，']
 让 当前用户 = 等于零的
 让 昵称 = ''
 让 当前页面 = 'home'
-让 loginMode = 'register'
+让 loginMode=“register”
 
-function esc(s) { return String(s).replace(/[&<线&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+函数esc（S）{返回字符串（S）. replace（/[&<线&':'&','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 功能
-  const m = Math.floor((Date.now() - new Date(t).getTime()) / 60000)
-  if (m < 1) return '刚刚'
-  if (m < 60) return m + ' 分钟前'
-  const h = Math.floor(m / 60)
-  if (h < 24) return h + ' 小时前'
-  return Math.floor(h / 24) + ' 天前'
+const m = Math.floor((Date.now() - new Date(t).getTime()) / 60000)
+如果<1）退回“刚刚”
+如果<60）退回m+'分钟前'
+const h = Math.floor(m / 60)
+如果（h）<24）回程h+“小时前”
+返回Math.floor（h/24）+'天前'
 }
 
-async function init() {
-  try {
-    const { data: { user } } = await sb.auth.getUser()
-    currentUser = user
-    if (user) {
-      const { data: p } = await 锑.从('profiles').选择(昵称，禁止).情商('id', 用户.身份证).maybeSingle()
-      如果 (P && P.禁止) {
+异步函数init（）{
+尝试 {
+const { data: { user } } = await sb.auth.getUser()
+currentUser = user
+如果（用户）{
+const{data:p}=wait锑（“profiles”）.（“大万”，大万）.（“id”，大万）. maybeSingle（）
+如果（P&&P. You）{
         警报('你的账号已被封禁')
         等待 锑.认证.退出登录()
         当前用户 = 等于零的
         昵称 = ''
       } 其他的 {
-        昵称 = (P && P.诨名) || ''
+昵称=（P&amP；com）||\'
       }
     }
   } 抓住 (E) { 控制台.错误(E) }
@@ -59,13 +59,13 @@ async function init() {
 }
 
 功能 粉刷() {
-  renderNav()
-  if (currentPage === 'home') renderHome()
-  else if (currentPage === 'login') renderLogin()
-  else if (currentPage === 'post') renderPost()
+renderNav()
+if (currentPage === 'home') renderHome()
+else if (currentPage === 'login') renderLogin()
+else if (currentPage === 'post') renderPost()
 }
 
-function renderNav() {
+函数renderNav（）{
   const nav = document.getElementById('nav-actions')
   if (currentUser) {
     nav.innerHTML = '<span class="text-gray-500 hidden sm:inline">' + esc(currentNickname) + '</span>' +
