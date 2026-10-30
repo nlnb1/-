@@ -1,0 +1,249 @@
+<!<!DOCTYPE html>
+<超文本标记语言 语言="zh-CN">
+<头>
+<元数据 字符集="UTF-8">
+<元数据 名字="viewport" 内容="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<标题>容县实验高中 · 校园墙</标题>
+<剧本 源="https://cdn.tailwindcss.com"></剧本>
+<剧本 源="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></剧本>
+</头>
+<身体 班级=“bg-gray-50 min-h-屏幕文本-gray-800”>
+<导航 班级=“粘顶-0 z-10 bg-白色边框-b边框-灰色-200”>
+  <级 班级=“max-w-[640px]mx-auto px-4 py-3弹性项目-中心对齐-之间”>
+    <h1 班级=“文本-sm字体-粗体文本-靛蓝-600”>容县实验高中 · 校园墙</h1>
+    <级 身份证="nav-actions" 班级=“弹性项目-中心间隙-3文本-sm”></级>
+  </级>
+</导航>
+<主要的 身份证="main" 班级="max-w-[640px] mx-auto px-4 py-4"></主要的>
+<剧本>
+// ========== 改这三行！！！ ==========
+常量 SUPABASE_URL = 'https://eqhbntvaofjtbiqbvfat.supabase.co/rest/v1/'
+常量 SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaGJudHZhb2ZqdGJpcWJ2ZmF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNzYwNzksImV4cCI6MjEwODk1MjA3OX0.K1QMYYmXv95wi2S7Si9qhwQTEfS89mExVUqwLAN286U'
+常量 INVITE_CODE  = 'nlnb2026'
+// ====================================
+
+常量 锑 = 窗.supabase.活性(SUPABASE_URL, SUPABASE_KEY)
+常量 BAD_WORDS = ['代写','刷单','博彩','加微信','贷款','约炮','开房']
+让 当前用户 = 等于零的
+让 昵称 = ''
+让 当前页面 = 'home'
+让 loginMode = 'register'
+
+function esc(s) { return String(s).replace(/[&<线&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+功能
+  const m = Math.floor((Date.now() - new Date(t).getTime()) / 60000)
+  if (m < 1) return '刚刚'
+  if (m < 60) return m + ' 分钟前'
+  const h = Math.floor(m / 60)
+  if (h < 24) return h + ' 小时前'
+  return Math.floor(h / 24) + ' 天前'
+}
+
+async function init() {
+  try {
+    const { data: { user } } = await sb.auth.getUser()
+    currentUser = user
+    if (user) {
+      const { data: p } = await 锑.从('profiles').选择(昵称，禁止).情商('id', 用户.身份证).maybeSingle()
+      如果 (P && P.禁止) {
+        警报('你的账号已被封禁')
+        等待 锑.认证.退出登录()
+        当前用户 = 等于零的
+        昵称 = ''
+      } 其他的 {
+        昵称 = (P && P.诨名) || ''
+      }
+    }
+  } 抓住 (E) { 控制台.错误(E) }
+  粉刷()
+}
+
+功能 粉刷() {
+  renderNav()
+  if (currentPage === 'home') renderHome()
+  else if (currentPage === 'login') renderLogin()
+  else if (currentPage === 'post') renderPost()
+}
+
+function renderNav() {
+  const nav = document.getElementById('nav-actions')
+  if (currentUser) {
+    nav.innerHTML = '<span class="text-gray-500 hidden sm:inline">' + esc(currentNickname) + '</span>' +
+      '<button onclick="goPost()" class="rounded bg-indigo-600 text-white px-3 py-1">发帖</button>' +
+      '<button onclick="logout()" class="text-gray-400">退出</button>'
+  } else {
+    nav.innerHTML = '<button onclick="goLogin()" class="rounded bg-indigo-600 text-white px-3 py-1">登录</button>'
+  }
+}
+
+async function renderHome() {
+  const main = document.getElementById('main')
+  main.innerHTML = '<div class="bg-white rounded-lg p-4 shadow-sm mb-4">' +
+    '<p class="text-sm text-gray-500">这是容县实验高中的校园墙 🌱 有话好好说，别发真人照片和真名</p>' +
+    '<button onclick="goPost()" class="mt-3 w-full rounded-lg bg-indigo-600 text-white py-2 text-sm">+ 发一条</button>' +
+    '</div>' +
+    '<div id="post-list" class="space-y-3"><p class="text-center text-sm text-gray-400 py-8">加载中…</p></div>'
+
+  const { data, error } = await sb.from('posts')
+    .select('id, content, anonymous, like_count, created_at, author_id, profiles(nickname)')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const list = document.getElementById('post-list')
+  if (!list) return
+  if (error) { list.innerHTML = '<p class="text-center text-sm text-red-500 py-8">加载失败：' + esc(error.message) + '</p>'; return }
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p class="text-center text-sm text-gray-400 py-8">还没有帖子，来当第一个吧</p>'
+    return
+  }
+
+  const myLikes = {}
+  if (currentUser) {
+    const { data: likes } = await sb.from('likes').select('post_id').eq('user_id', currentUser.id)
+    ;(likes || []).forEach(l => { myLikes[l.post_id] = true })
+  }
+
+  list.innerHTML = data.map(p => {
+    const liked = !!myLikes[p.id]
+    const name = p.anonymous ? '匿名同学' : ((p.profiles && p.profiles.nickname) || '同学')
+    return '<div class="bg-white rounded-lg p-4 shadow-sm">' +
+      '<div class="flex items-center gap-2 mb-2 text-sm">' +
+        '<div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">' + (p.anonymous ? '?' : esc(name[0] || '同')) + '</div>' +
+        '<span class="font-medium text-gray-700">' + esc(name) + '</span>' +
+        '<span class="text-gray-400">· ' + ago(p.created_at) + '</span>' +
+      '</div>' +
+      '<p class="text-gray-800 whitespace-pre-wrap break-words">' + esc(p.content) + '</p>' +
+      '<div class="flex items-center gap-4 mt-3 text-sm text-gray-500">' +
+        '<button onclick="toggleLike(\'' + p.id + '\', ' + liked + ')" class="' + (liked ? 'text-red-500' : '') + '">' +
+          (liked ? '❤️' : '🤍') + ' <span id="lk-' + p.id + '">' + (p.like_count || 0) + '</span></button>' +
+        '<button onclick="reportPost(\'' + p.id + '\')">举报</button>' +
+      '</div>' +
+    '</div>'
+  }).join('')
+}
+
+function renderLogin() {
+  const main = document.getElementById('main')
+  main.innerHTML = '<div class="bg-white rounded-lg p-6 shadow-sm">' +
+    '<div class="flex gap-2 mb-4 text-sm">' +
+      '<button id="tab-reg" onclick="setLoginMode(\'register\')" class="flex-1 rounded py-2 bg-indigo-600 text-white">注册</button>' +
+      '<button id="tab-login" onclick="setLoginMode(\'login\')" class="flex-1 rounded py-2 bg-gray-100">登录</button>' +
+    '</div>' +
+    '<div class="space-y-3">' +
+      '<input id="in-nickname" placeholder="昵称（不要用真名）" class="w-full border rounded px-3 py-2 outline-none focus:border-indigo-400">' +
+      '<input id="in-password" type="password" placeholder="密码（至少 6 位）" class="w-full border rounded px-3 py-2 outline-none focus:border-indigo-400">' +
+      '<input id="in-invite" placeholder="邀请码" class="w-full border rounded px-3 py-2 outline-none focus:border-indigo-400">' +
+      '<button id="btn-submit" onclick="submitAuth()" class="w-full rounded bg-indigo-600 text-white py-2">注册</button>' +
+    '</div>' +
+    '<p class="mt-4 text-xs text-gray-400 leading-relaxed">校内产品，请勿发布真人照片、真实姓名、班级信息。违规内容会被删除，严重者封号。</p>' +
+  '</div>'
+  setLoginMode('register')
+}
+
+function setLoginMode(m) {
+  loginMode = m
+  const isReg = m === 'register'
+  document.getElementById('tab-reg').className = 'flex-1 rounded py-2 ' + (isReg ? 'bg-indigo-600 text-white' : 'bg-gray-100')
+  document.getElementById('tab-login').className = 'flex-1 rounded py-2 ' + (!isReg ? 'bg-indigo-600 text-white' : 'bg-gray-100')
+  document.getElementById('btn-submit').textContent = isReg ? '注册' : '登录'
+  document.getElementById('in-invite').style.display = isReg ? '' : 'none'
+}
+
+async function submitAuth() {
+  const btn = document.getElementById('btn-submit')
+  const nickname = document.getElementById('in-nickname').value.trim()
+  const password = document.getElementById('in-password').value
+  const invite = document.getElementById('in-invite').value.trim()
+  if (!nickname || !password) return alert('昵称和密码都要填')
+  if (nickname.length > 12) return alert('昵称最长 12 个字')
+  if (password.length < 6) return alert('密码至少 6 位')
+  if (!/^[\u4e00-\u9fa5\w]+$/.test(nickname)) return alert('昵称只能用中文、字母、数字')
+
+  const email = nickname + '@campus.local'
+  btn.disabled = true
+  btn.textContent = '处理中…'
+  try {
+    if (loginMode === 'register') {
+      if (INVITE_CODE && invite !== INVITE_CODE) { alert('邀请码不对'); return }
+      const { data, error } = await sb.auth.signUp({ email, password })
+      if (error) throw error
+      if (data.user) {
+        const { error: e2 } = await sb.from('profiles').insert({ id: data.user.id, nickname })
+        if (e2) throw e2
+      }
+      alert('注册成功，欢迎！')
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password })
+      if (error) throw error
+    }
+    currentPage = 'home'
+    await init()
+  } catch (e) {
+    alert(e.message || '出错了')
+  } finally {
+    btn.disabled = false
+    btn.textContent = loginMode === 'register' ? '注册' : '登录'
+  }
+}
+
+function renderPost() {
+  const main = document.getElementById('main')
+  main.innerHTML = '<div class="bg-white rounded-lg p-4 shadow-sm">' +
+    '<h1 class="text-lg font-bold mb-3">发一条</h1>' +
+    '<textarea id="in-content" rows="6" maxlength="1000" placeholder="说点什么…" class="w-full border rounded px-3 py-2 outline-none focus:border-indigo-400 resize-none"></textarea>' +
+    '<p class="text-right text-xs text-gray-400 mt-1"><span id="char-count">0</span>/1000</p>' +
+    '<label class="flex items-center gap-2 mt-3 text-sm text-gray-600"><input id="in-anon" type="checkbox" checked> 匿名发布</label>' +
+    '<button id="btn-publish" onclick="publishPost()" class="mt-5 w-full rounded bg-indigo-600 text-white py-2">发布</button>' +
+    '<button onclick="goHome()" class="mt-2 w-full rounded bg-gray-100 text-gray-600 py-2">取消</button>' +
+  '</div>'
+  const ta = document.getElementById('in-content')
+  ta.addEventListener('input', () => { document.getElementById('char-count').textContent = ta.value.length })
+}
+
+async function publishPost() {
+  if (!currentUser) { goLogin(); return }
+  const content = document.getElementById('in-content').value.trim()
+  const anonymous = document.getElementById('in-anon').checked
+  if (!content) return alert('写点什么吧')
+  if (BAD_WORDS.some(w => content.indexOf(w) >= 0)) return alert('内容含违规词，请修改')
+  const btn = document.getElementById('btn-publish')
+  btn.disabled = true
+  btn.textContent = '发布中…'
+  const { error } = await sb.from('posts').insert({ content, anonymous, author_id: currentUser.id })
+  if (error) { alert(error.message); btn.disabled = false; btn.textContent = '发布'; return }
+  goHome()
+}
+
+async function toggleLike(postId, wasLiked) {
+  if (!currentUser) { alert('请先登录'); goLogin(); return }
+  const span = document.getElementById('lk-' + postId)
+  const cur = parseInt(span.textContent) || 0
+  const btn = span.parentElement
+  if (wasLiked) {
+    await sb.from('likes').delete().eq('post_id', postId).eq('user_id', currentUser.id)
+    btn.outerHTML = '<button onclick="toggleLike(\'' + postId + '\', false)">🤍 <span id="lk-' + postId + '">' + Math.max(0, cur - 1) + '</span></button>'
+  } else {
+    const { error } = await sb.from('likes').insert({ post_id: postId, user_id: currentUser.id })
+    if (error && error.code !== '23505') { alert(error.message); return }
+    btn.outerHTML = '<button onclick="toggleLike(\'' + postId + '\', true)" class="text-red-500">❤️ <span id="lk-' + postId + '">' + (cur + 1) + '</span></button>'
+  }
+}
+
+async function reportPost(postId) {
+  if (!currentUser) { alert('请先登录'); goLogin(); return }
+  const reason = prompt('举报原因（比如：骂人、造谣、发广告）')
+  if (!reason) return
+  await sb.from('reports').insert({ post_id: postId, user_id: currentUser.id, reason })
+  alert('已收到，管理员会尽快处理')
+}
+
+function goHome() { currentPage = 'home'; render() }
+function goLogin() { currentPage = 'login'; render() }
+function goPost() { if (!currentUser) { currentPage = 'login'; render(); return } currentPage = 'post'; render() }
+async function logout() { await sb.auth.signOut(); currentUser = null; currentNickname = ''; goHome() }
+
+init()
+</script>
+</body>
+</html>
